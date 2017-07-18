@@ -26,7 +26,7 @@ using Knet
 end
 
 #predict(w,x) = w[1]*x .+ w[2]
-function predict(w,x)
+function predict(w,x) # THIS THE NEURAL MDOEL
 return w[1].*x .+ w[2].*sin(x)
 end
 w =  Any[ 0.1*randn(1,1), 0 ]
