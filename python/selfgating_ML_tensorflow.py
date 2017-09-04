@@ -5,33 +5,31 @@ Created on Mon Sep  4 21:15:00 2017
 @author: jasper
 """
 
-
 from __future__ import print_function
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 
-
-
 # CREATE MOCK DATA
-xlinspace=np.linspace(0,100,num=1e4)
+Nlinspace=10000
+xlinspace=np.linspace(0,600,num=Nlinspace)
 sinus=np.sin(xlinspace)
-sinus=5*(sinus+1); 
-modsinus=np.sin(xlinspace)+np.sin(20*xlinspace)+0.2*np.sin(3*xlinspace)
+sinus=5*(sinus+1); ## TRUE SIGNAL
 
+modsinus=np.sin(xlinspace)+np.sin(20*xlinspace)+0.2*np.sin(3*xlinspace)
+modsinus=modsinus+np.random.rand(Nlinspace) # signal modified by extra harmonics and noise
 
 plt.plot(sinus)
 plt.plot(modsinus); plt.show()
 
 
-N2=750 #nr of steps used for estimation
+N2=160 #nr of steps used for estimation
 N=9000 #NR OF DATAPOINTS 
 
 
 xinput2=np.zeros((N,N2))
 for i in np.arange(N):
-    print(modsinus[i:i+2]);
     xinput2[i]=modsinus[i:i+N2]
 
 yinput2=sinus[1:1+N]
@@ -41,14 +39,18 @@ yinput2=np.round(yinput2)
 print('shape of xinput',np.shape(xinput2))
 print('shape of yinput',np.shape(yinput2))
 # Parameters
-learning_rate = 0.1
-num_steps = 100
+learning_rate = 0.03
+num_steps = 500
 batch_size = N
-display_step = 100
+display_step = 10
 
 # Network Parameters
-n_hidden_1 = 256 # 1st layer number of neurons
-n_hidden_2 = 256 # 2nd layer number of neurons
+n_hidden_1 = 64 # 1st layer number of neurons
+n_hidden_2 = 32 # 2nd layer number of neurons
+n_hidden_3 = 16 # 3rd layer number of neurons
+n_hidden_4 = 16 # 3rd layer number of neurons
+n_hidden_5 = 16 # 3rd layer number of neurons
+
 num_input = 10 # MNIST data input (img shape: 28*28)
 num_classes = 11 # MNIST total classes (0-9 digits)
 
@@ -62,12 +64,14 @@ input_fn = tf.estimator.inputs.numpy_input_fn(
 def neural_net(x_dict):
     # TF Estimator input is a dict, in case of multiple inputs
     x = x_dict['images']
-    # Hidden fully connected layer with 256 neurons
+    # Hidden fully connected layer with 32 neurons
     layer_1 = tf.layers.dense(x, n_hidden_1)
-    # Hidden fully connected layer with 256 neurons
     layer_2 = tf.layers.dense(layer_1, n_hidden_2)
+    layer_3 = tf.layers.dense(layer_2, n_hidden_3)
+    layer_4 = tf.layers.dense(layer_3, n_hidden_4)
+    layer_5 = tf.layers.dense(layer_4, n_hidden_5)
     # Output fully connected layer with a neuron for each class
-    out_layer = tf.layers.dense(layer_2, num_classes)
+    out_layer = tf.layers.dense(layer_5, num_classes)
     return out_layer
 
 # Define the model function (following TF Estimator Template)
@@ -140,3 +144,5 @@ plt.plot(yinput2[:n_images])
 plt.plot(preds,'ro')
 plt.show()
 
+plt.plot(preds,yinput2[:n_images],'b.')
+plt.show()
