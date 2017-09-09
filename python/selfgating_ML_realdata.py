@@ -1,56 +1,75 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep  4 21:15:00 2017
+Created on Tue Sep  5 17:05:12 2017
 
-@author: jasper
+@author: jschoormans
 """
-
-
 from __future__ import print_function
-
+import numpy as np
+import os 
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import numpy as np
 
 
+
+path='L:\\basic\divi\Projects\cosart\CS_simulations\MachineLearning\\4novscan_6'
+os.chdir(path)
+respdata=np.load('answer.npy')
+ctrksp=np.load('data.npy')
+
+
+ctrksp=ctrksp/np.max(ctrksp)
+
+plt.plot(ctrksp[:,1])
+plt.show()
+
+print(ctrksp.shape)
+print(respdata.shape)
+
+
+num_classes = 4# MNIST total classes (0-9 digits)
 
 # CREATE MOCK DATA
-xlinspace=np.linspace(0,100,num=1e4)
-sinus=np.sin(xlinspace)
-sinus=5*(sinus+1); 
-modsinus=np.sin(xlinspace)+np.sin(20*xlinspace)+0.2*np.sin(3*xlinspace)
+respdata_label=respdata-1
+respdata_label=np.reshape(respdata_label,[1360])
+plt.plot(respdata_label)
+plt.show()
 
 
-plt.plot(sinus)
-plt.plot(modsinus); plt.show()
+N2=128 #nr of steps used for estimation
+N=1200 #NR OF DATAPOINTS 
+nchans=1;
 
-
-N2=750 #nr of steps used for estimation
-N=9000 #NR OF DATAPOINTS 
-
-
-xinput2=np.zeros((N,N2))
+ctrkspshape=np.shape(ctrksp)
+xinput2=np.zeros([N,N2])
 for i in np.arange(N):
-    print(modsinus[i:i+2]);
-    xinput2[i]=modsinus[i:i+N2]
+    xinput2[i,:]=ctrksp[i:i+N2,2]
 
-yinput2=sinus[1:1+N]
-yinput2=np.reshape(yinput2,[N,])
-yinput2=np.round(yinput2)
+yinput2=respdata_label[1:1+N]
+
+print(xinput2.shape)
+
+plt.plot(respdata_label[1:5*N2])
+plt.plot(xinput2[1,:])
+plt.show()
+
 
 print('shape of xinput',np.shape(xinput2))
 print('shape of yinput',np.shape(yinput2))
 # Parameters
-learning_rate = 0.1
-num_steps = 100
+learning_rate = 0.15
+num_steps = 2500
 batch_size = N
-display_step = 100
+display_step = 10
 
 # Network Parameters
-n_hidden_1 = 256 # 1st layer number of neurons
-n_hidden_2 = 256 # 2nd layer number of neurons
+n_hidden_1 = 128 # 1st layer number of neurons
+n_hidden_2 = 64 # 2nd layer number of neurons
+n_hidden_3 = 64 # 3rd layer number of neurons
+n_hidden_4 = 64 # 3rd layer number of neurons
+n_hidden_5 = 64 # 3rd layer number of neurons
+
 num_input = 10 # MNIST data input (img shape: 28*28)
-num_classes = 11 # MNIST total classes (0-9 digits)
 
 
 # Define the input function for training
@@ -62,10 +81,12 @@ input_fn = tf.estimator.inputs.numpy_input_fn(
 def neural_net(x_dict):
     # TF Estimator input is a dict, in case of multiple inputs
     x = x_dict['images']
-    # Hidden fully connected layer with 256 neurons
+    # Hidden fully connected layer with 32 neurons
     layer_1 = tf.layers.dense(x, n_hidden_1)
-    # Hidden fully connected layer with 256 neurons
     layer_2 = tf.layers.dense(layer_1, n_hidden_2)
+    layer_3 = tf.layers.dense(layer_2, n_hidden_3)
+    layer_4 = tf.layers.dense(layer_3, n_hidden_4)
+    layer_5 = tf.layers.dense(layer_4, n_hidden_5)
     # Output fully connected layer with a neuron for each class
     out_layer = tf.layers.dense(layer_2, num_classes)
     return out_layer
@@ -124,7 +145,7 @@ model.evaluate(input_fn)
 
 
 # Predict single images
-n_images = 100
+n_images = 500
 # Get images from test set
 test_images = xinput2[:n_images]
 # Prepare the input data
@@ -134,9 +155,9 @@ input_fn = tf.estimator.inputs.numpy_input_fn(
 preds = list(model.predict(input_fn))
 
 # Display
-plt.plot(sinus[:n_images])
-plt.plot(5*(1+modsinus[:n_images]))
 plt.plot(yinput2[:n_images])
 plt.plot(preds,'ro')
 plt.show()
 
+plt.plot(preds,yinput2[:n_images],'b.')
+plt.show()
