@@ -116,10 +116,10 @@ def one_hot(y_):
 #---------------------------
 
 
-path='C:\\Users\\jaspe\\Dropbox\\phD\\python\\4novscan_6'
+path='C:\\Users\\jaspe\\Dropbox\\phD\\python'
 os.chdir(path)
 labeldata=np.load('answer.npy')
-kspace=np.load('data.npy')
+kspace=np.load('gatingsignal.npy')
 
 
 for i in np.arange(np.size(kspace,axis=1)):
@@ -131,6 +131,8 @@ for i in np.arange(np.size(kspace,axis=1)):
 print('labeldata shape: ',np.shape(labeldata))
 print('kspace shape: ',np.shape(kspace))
 
+kspace2=np.reshape(kspace,[1360,28*10*2])
+
 #%%---------------------------
 #make training tensors
 #---------------------------
@@ -138,16 +140,16 @@ print('kspace shape: ',np.shape(kspace))
 N=1000;
 Ntest=300;
 N2=10; #length of datasets
-N3=30
+N3=28*10*2
 
 X_train=np.zeros([N,N2,N3])
 X_test=np.zeros([Ntest,N2,N3])
 
 for i in np.arange(N):
-    X_train[i,:,:]=kspace[i:i+N2,:N3]
+    X_train[i,:,:]=kspace2[i:i+N2,:N3]
 
 for i in np.arange(Ntest):
-    X_test[i,:,:]=kspace[N+i:N+i+N2,:N3]
+    X_test[i,:,:]=kspace2[N+i:N+i+N2,:N3]
 
 print('shape of X_train:',np.shape(X_train))
 print('shape of X_test:',np.shape(X_test))
